@@ -5,7 +5,7 @@ Inspired by and forked from Boat's BoatTEST / Elttob's FusionCI
 I was always discouraged from using TestEZ since it manipulated function environments in order to expose the API. EzSpec removes all of that.
 
 ## Usage
-[Click here for API →]()
+[Click here for API →](API.md)
 
 #### Starting Tests:
 This will run any .spec files that are descendants of `script.Parent.Specs`
@@ -21,8 +21,8 @@ EzSpec.runTests({
 	};
 	includeDescendants = true;
 	-- verboseLogging = true;
-	--showOnlyFailures = true;
-	--showExecutionTime = true;
+	-- showOnlyFailures = true;
+	-- showExecutionTime = true;
 })
 
 ```
