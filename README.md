@@ -32,7 +32,7 @@ EzSpec.runTests({
 ```
 
 #### Spec files:
-In order to be recognized by the framework files must end in .spec
+In order to be recognized by the framework files must end in `.spec`
 
 They should be a module that returns an array of tests created using the `declare` method, see example below:
 ```Lua
