@@ -1,0 +1,15 @@
+{
+  "name": "EzSpec Tests",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "EzSpec": {
+        "$path": "src"
+      }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$path": "tests"
+    }
+  }
+}
