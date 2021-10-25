@@ -5,7 +5,7 @@ function EzSpec.runTests(config: dictionary)
 ```
 Runs tests based on the provided `config`
 
-* `config.directories: array` - An array of instances used to search for .spec files
+* `config.directories: array` - An array of instances used to search for `.spec` files
 * `config.ignoreNames: array` - An array of file names to ignore
 * `config.includeDescendants: boolean` - Defines whether to search for .spec files in descendants or in children
 * `config.verboseLogging: boolean` - Whether verbose logging is enabled
