@@ -1,11 +1,15 @@
 # EzSpec
 A unit testing framework for Roblox and Luau!
+
 Inspired by and forked from Boat's BoatTEST / Elttob's FusionCI
 
-I was always discouraged from using TestEZ since it manipulated function environments in order to expose the API. EzSpec removes all of that.
+I was always discouraged from using TestEZ since it manipulated function environments in order to expose the API. EzSpec removes all of that and provides a minimalistic way of testing.
 
 ## Usage
-[Click here for API →](API.md)
+
+### [Click here for API →](API.md)
+
+---
 
 #### Starting Tests:
 This will run any .spec files that are descendants of `script.Parent.Specs`
