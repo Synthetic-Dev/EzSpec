@@ -1,21 +1,21 @@
+local Types = require(script.Parent.Types)
+
 local this = { }
 
 function this:_assert(result, tail, ...)
 	tail = tail or "pass"
-	local invert = rawget(self, "_invert")
 
 	assert(
 		result,
 		string.format(
 			"Expected value to%s " .. tail,
-			invert and " never" or "",
+			self._invert and " never" or "",
 			...
 		)
 	)
 end
 
-function this:_assertValueType(type_s, methodName)
-	local value = rawget(self, "_value")
+function this:_assertType(value, type_s, methodName)
 	local typeOf = typeof(value)
 
 	if typeof(type_s) == "table" then
@@ -42,11 +42,9 @@ function this:_assertValueType(type_s, methodName)
 end
 
 function this:_result(func)
-	local invert = rawget(self, "_invert")
-
 	local returned = { func(); }
 	local result = table.remove(returned, 1)
-	if invert then
+	if self._invert then
 		result = not result
 	end
 
@@ -54,7 +52,7 @@ function this:_result(func)
 end
 
 function this.invert(self)
-	rawset(self, "_invert", not rawget(self, "_invert"))
+	rawset(self, "_invert", not self._invert)
 end
 this.never = this.invert
 
@@ -68,9 +66,10 @@ function this.exist(self, value)
 	end
 end
 this.exists = this.exist
+this.ok = this.exist
 
 function this.equal(self, value)
-	return function(expectedValue)
+	return function(expectedValue: any)
 		local result = self:_result(function()
 			return value == expectedValue
 		end)
@@ -86,7 +85,7 @@ end
 this.equals = this.equal
 
 function this.isType(self, value)
-	return function(expectedType)
+	return function(expectedType: string)
 		local result = self:_result(function()
 			return typeof(value) == expectedType
 		end)
@@ -102,30 +101,38 @@ end
 this.aType = this.isType
 
 function this.isClass(self, value)
-	return function(expectedClassName)
+	return function(expectedClassName: string)
 		local result = self:_result(function()
 			return typeof(value) == "Instance" and value:IsA(expectedClassName)
 		end)
 
 		self:_assert(
 			result,
-			"be instance of '%s', got '%s'",
+			"be an instance of '%s', got '%s'",
 			expectedClassName,
 			typeof(value) == "Instance" and value.ClassName or typeof(value)
 		)
 	end
 end
 this.aClass = this.isClass
+this.instanceOf = this.isClass
 
 function this.error(self, value, index)
-	self:_assertValueType("function", index)
+	self:_assertType(value, "function", index)
 
 	return function()
 		local result, _err = self:_result(function()
 			return pcall(value)
 		end)
 
-		self:_assert(not result, "error")
+		assert(
+			not result,
+			string.format(
+				"Expected function to%s error, but it did%s",
+				self._invert and " never" or "",
+				self._invert and "" or "n't"
+			)
+		)
 	end
 end
 this.errors = this.error
@@ -135,7 +142,7 @@ this.throw = this.error
 this.throws = this.error
 
 function this.match(self, value)
-	return function(pattern)
+	return function(pattern: string)
 		local result = self:_result(function()
 			return string.match(tostring(value), pattern) ~= nil
 		end)
@@ -146,10 +153,9 @@ end
 this.matches = this.match
 
 function this.contain(self, value, index)
-	local validTypes = { "table"; "string"; }
-	self:_assertValueType(validTypes, index)
+	self:_assertType(value, { "table"; "string"; }, index)
 
-	return function(expectedValue)
+	return function(expectedValue: any)
 		local result = self:_result(function()
 			if typeof(value) == "table" then
 				for _, v in pairs(value) do
@@ -171,9 +177,9 @@ this.contains = this.contain
 this.has = this.contain
 
 function this.containOnly(self, value, index)
-	self:_assertValueType("table", index)
+	self:_assertType(value, "table", index)
 
-	return function(expectedType)
+	return function(expectedType: string)
 		local result = self:_result(function()
 			for _, v in pairs(value) do
 				if typeof(v) ~= expectedType then
@@ -189,14 +195,53 @@ end
 this.containsOnly = this.containOnly
 this.hasOnly = this.containOnly
 
-this.__index = function(self, index)
-	local meta = getmetatable(self)
+function this.near(self, value, index)
+	self:_assertType(value, "number", index)
 
+	return function(nearValue: number, nearLimit: number?)
+		nearLimit = nearLimit or 1e-3
+
+		local result = self:_result(function()
+			return value >= nearValue - nearLimit
+				and value <= nearValue + nearLimit
+		end)
+
+		self:_assert(
+			result,
+			"be within '%s ± %s', got '%s'",
+			tostring(nearValue),
+			tostring(nearLimit),
+			tostring(value)
+		)
+	end
+end
+this.nears = this.near
+this.nearly = this.near
+
+function this.between(self, value, index)
+	self:_assertType(value, "number", index)
+
+	return function(minValue: number, maxValue: number)
+		local result = self:_result(function()
+			return math.clamp(value, minValue, maxValue) == value
+		end)
+
+		self:_assert(
+			result,
+			"be between '%s, %s', got '%s'",
+			tostring(minValue),
+			tostring(maxValue),
+			tostring(value)
+		)
+	end
+end
+
+this.__index = function(self, index)
 	if string.sub(index, 1, 1) == "_" then
-		return rawget(self, index) or rawget(meta, index)
+		return rawget(self, index) or rawget(this, index)
 	end
 
-	local method = rawget(meta, index)
+	local method = rawget(this, index)
 	if method and typeof(method) == "function" then
 		local value = rawget(self, "_value")
 		local result = method(self, value, index)
@@ -208,7 +253,11 @@ this.__index = function(self, index)
 	return self
 end
 
-return function(value)
+this.__newindex = function()
+	error("'this' is read-only")
+end
+
+return function(value: any)
 	return setmetatable({
 		_value = value;
 		_invert = false;

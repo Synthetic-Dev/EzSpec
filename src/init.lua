@@ -1,5 +1,9 @@
--- Taken from BoatTEST
-return setmetatable({ }, {
+return setmetatable({
+	runTests = require(script.runTests);
+	this = require(script.this);
+	declare = require(script.declare);
+}, {
+	-- Taken from BoatTEST
 	__index = function(self, index)
 		local cached = rawget(self, index)
 		if cached then

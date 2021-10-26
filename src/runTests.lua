@@ -1,15 +1,9 @@
+local Types = require(script.Parent.Types)
+
+local executeTests = require(script.Parent.executeTests)
 local prettyPrint = require(script.Parent.prettyPrint)
 
-type configType = {
-	directories: { [number]: Instance; };
-	ignoreNames: { [number]: string; };
-	includeDescendants: boolean?;
-	verboseLogging: boolean?;
-	showOnlyFailures: boolean?;
-	showExecutionTime: boolean?;
-}
-
-return function(config: configType)
+return function(config: Types.Config)
 	local directories = config.directories
 	if not directories then
 		return print("No directories supplied for testing")
@@ -18,13 +12,17 @@ return function(config: configType)
 	local ignoreNames = config.ignoreNames or { }
 
 	local includeDescendants = not not config.includeDescendants
-	local verboseLogging = not not config.verboseLogging
+	config.verboseLogging = not not config.verboseLogging
 
-	local showOnlyFailures = not not config.showOnlyFailures
-	local showExecutionTime = not not config.showExecutionTime
+	config.showOnlyFailures = not not config.showOnlyFailures
+	config.showExecutionTime = not not config.showExecutionTime
+
+	if config.useEmojis == nil then
+		config.useEmojis = true
+	end
 
 	local function log(...)
-		if verboseLogging then
+		if config.verboseLogging then
 			print(...)
 		end
 	end
@@ -63,7 +61,10 @@ return function(config: configType)
 		for moduleName, module in pairs(modules) do
 			log("\tFound .spec '" .. moduleName .. "'")
 
-			if table.find(ignoreNames, module.Name) then
+			if
+				table.find(ignoreNames, module.Name)
+				or table.find(ignoreNames, string.sub(module.Name, 1, -6))
+			then
 				log("\tIgnoring .spec")
 				continue
 			end
@@ -77,60 +78,18 @@ return function(config: configType)
 				continue
 			end
 
-			local totalTime = 0
-
-			local moduleResults = { }
-			for _, test in pairs(tests) do
-				log("\tRunning test '" .. test.Name .. "'")
-
-				local skipped = false
-				local function skip(reason: string)
-					skipped = true
-					error(reason, 2)
-				end
-
-				local testStart = os.clock()
-
-				local passed, err = pcall(test, skip)
-
-				if skipped then
-					log("\t\tSKIPPED")
-					counts[2] += 1
-				elseif passed then
-					log("\t\tPASSED")
-					counts[1] += 1
-				else
-					log("\t\tFAILED")
-					counts[3] += 1
-				end
-
-				local executionTime
-				if showExecutionTime then
-					executionTime = os.clock() - testStart
-					totalTime += executionTime
-				end
-
-				if (passed or skipped) and showOnlyFailures then
-					continue
-				end
-
-				moduleResults[test.Name] = {
-					passed = passed;
-					skipped = skipped;
-					err = err;
-					time = executionTime;
-				}
-			end
-
-			dirResults[moduleName] = {
-				results = moduleResults;
-				time = showExecutionTime and totalTime;
+			local context = {
+				config = config;
+				counts = counts;
+				testDepth = 0;
 			}
+
+			dirResults[moduleName] = executeTests(tests, context)
 		end
 
 		results[dirName] = dirResults
 	end
 
 	log("Tests complete, outputting results")
-	prettyPrint(results, counts)
+	prettyPrint(results, counts, config)
 end
