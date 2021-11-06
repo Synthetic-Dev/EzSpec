@@ -1,5 +1,5 @@
 [package]
-name = "syntheticdev/ezspec"
+name = "synthetic-dev/ezspec"
 description = "An easy unit testing framework for Roblox / Luau"
 version = "0.1.0"
 license = "MIT"
