@@ -5,6 +5,16 @@ Inspired by and forked from Boat's BoatTEST / Elttob's FusionCI
 
 I was always discouraged from using TestEZ since it manipulated function environments in order to expose the API. EzSpec removes all of that and provides a minimalistic way of testing.
 
+## Installation
+### From Github
+For the most up-to-date version of the framework you can download this repository and place the `src` folder into your project, renaming it to `EzSpec`. You can also find a `.rbxmx` model and a zipped version of the `src` on the [Github Releases Page](https://github.com/Synthetic-Dev/EzSpec/releases)
+### With Wally
+[Wally](https://github.com/UpliftGames/wally) is a modern package manager for Roblox projects inspired by Cargo. You can use it to install EzSpec:
+```toml
+[dependencies]
+EzSpec = "syntheticdev/ezspec@0.1.0"
+```
+
 ## Usage
 
 ### [Click here for API →](API.md)

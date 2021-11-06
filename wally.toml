@@ -1,0 +1,10 @@
+[package]
+name = "syntheticdev/ezspec"
+description = "An easy unit testing framework for Roblox / Luau"
+version = "0.1.0"
+license = "MIT"
+authors = ["SyntheticDev"]
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
