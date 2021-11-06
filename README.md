@@ -12,7 +12,7 @@ For the most up-to-date version of the framework you can download this repositor
 [Wally](https://github.com/UpliftGames/wally) is a modern package manager for Roblox projects inspired by Cargo. You can use it to install EzSpec:
 ```toml
 [dependencies]
-EzSpec = "syntheticdev/ezspec@0.1.0"
+EzSpec = "synthetic-dev/ezspec@0.1.0"
 ```
 
 ## Usage
